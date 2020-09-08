@@ -2,7 +2,7 @@
 function touch([Parameter(ValueFromRemainingArguments=$true)][String[]]$file_names){
     <#
     .SYNOPSIS
-        Creates a file so long as it doesn't already exist. Unlike Linux touch, the file's recent date is not updated
+        Creates a file so long as it doesn't already exist. If the file exists, it changes the last modified time to the current time. 
     .PARAMETER file_names
         Space separated (or array) of names of files and their paths that you would like to create
     .EXAMPLE
@@ -31,16 +31,21 @@ function touch([Parameter(ValueFromRemainingArguments=$true)][String[]]$file_nam
         -a----          9/8/2020   3:27 PM              0 file1
     #>
     foreach($name in $file_names){
-        #If the file doesn't already exist
-        if(!(Test-Path $file_names)) {
-            #If the directory it wants to be in already exists
+
+
+        # If the file doesn't already exist
+        # and if the dir supplied by name is valid (or no dir supplied)
+        # then you create a new file
+        if(!(Test-Path $name)) {
             $dir = Split-Path $name
-            if(($dir -eq "") -and !($name -eq "")) {
-                $dir = "."
-            }
-            if((Test-Path($dir))) {
+            if(($dir -eq "") -or (Test-Path($dir))) {
                 New-Item $name
             }
+        }
+        
+        # Otherwise rewrite the modified date/time of a file that already exists
+        elseif((Get-Item $name) -isnot [System.IO.DirectoryInfo]){
+            (Get-ChildItem $name).LastWriteTime = Get-Date
         }
     }
     

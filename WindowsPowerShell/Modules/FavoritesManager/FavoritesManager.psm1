@@ -8,7 +8,6 @@
 # This needs to be ordered so that when we sort the keys they remain in the place they should be
 New-Variable -Name favs_dict -Value (New-Object Collections.Specialized.OrderedDictionary) -Scope Script -Force
 
-
 <# Public Interface#>
 
 function cdf([string] $alias, [switch]$add, [switch]$remove, 
@@ -19,7 +18,8 @@ function cdf([string] $alias, [switch]$add, [switch]$remove,
         Interface for creating and removing favorites to quickly change directories to
 
     .DESCRIPTION
-        Provides an interface for managing a list of favorited directories to quickly switch to. The list of favorites is saved in favorites.txt located in (Split-Path $profile)
+        Provides an interface for managing a list of favorited directories to quickly switch to. The list of favorites is saved in favorites.txt located in (Split-Path $profile).
+        There is an autocomplete by pressing tab when selecting a directory to make cdf easier to use
 
         PS C:\> cdf 
             lists favorites
@@ -150,15 +150,13 @@ function cdf([string] $alias, [switch]$add, [switch]$remove,
         Pictures                       C:\Users\Natalie\Pictures
 
     #>
-
-    
     Update-Dictionary
-
     if($clear) {
         Clear-Favorites
         break
     }
-
+    
+    
     if($add) { Add-Favorite $alias }
 
     if($remove){ cdf_delete($alias)  }
@@ -183,6 +181,14 @@ function cdf([string] $alias, [switch]$add, [switch]$remove,
         return Get-Favorites
     }
 }
+
+<# Autocomplete Feature #>
+$scriptblock = {
+    param($commandName, $parameterName, $match)
+    
+    $script:favs_dict.Keys -like "$match*"
+}
+Register-ArgumentCompleter -CommandName cdf -ParameterName alias -ScriptBlock $scriptBlock
 
 
 <# Private helper interface #>
@@ -233,15 +239,20 @@ function clear_dict()
     }
 }
 
+
 function Update-Dictionary()
 { 
     <# Clears the favorites dictionary and then updates it with the favorites in favorites.txt #>
     clear_dict
+
+    $script:scriptBlock = {}
     $newDict = @{}
     foreach($key_val in Get-FavoritesFile)
     {
         $split = $key_val.split(',')
-        $newDict[$split[0]] = $split[1]
+        $key = $split[0]
+        $val = $split[1]
+        $newDict[$key] = $val
     }
 
     $keys = New-Object System.Collections.ArrayList
@@ -254,6 +265,8 @@ function Update-Dictionary()
     {
         $script:favs_dict.Add($i, $newDict[$i])
     }
+
+
 }
 
 function Add-Favorite([string] $name)
@@ -290,5 +303,6 @@ function Write-Dict-To-File()
     $file_str | out-file (Get-FavoritesPath)
 }
 
-
+Update-Dictionary # To make sure that $favs_dict is updated and autocomplete works when PowerShell is started up
 Export-ModuleMember -Function cdf
+

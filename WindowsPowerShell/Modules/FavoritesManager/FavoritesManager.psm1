@@ -1,7 +1,6 @@
 <#
     Author: Natalie Dorshimer 
     email:  dorshimer.natalie@gmail.com
-    Last Edited: 9/5/2020
 #>
 
 <# Script Variables #>

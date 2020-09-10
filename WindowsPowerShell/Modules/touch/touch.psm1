@@ -1,4 +1,6 @@
-
+<#
+    Author: Natalie Dorshimer
+#>
 function touch([Parameter(ValueFromRemainingArguments=$true)][String[]]$file_names){
     <#
     .SYNOPSIS

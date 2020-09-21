@@ -162,6 +162,10 @@ function cdf([string] $alias, [switch]$add, [switch]$remove,
 
     if($open){ Invoke-Item (Get-FavoritesPath) }
 
+    if($path) {
+        return $script:favs_dict[$alias]
+    }
+    
     if($alias -and !$remove) {
         # If the path is legitimate it defaults to 'cd $alias'
         if(Test-Path $alias) { 
@@ -172,9 +176,7 @@ function cdf([string] $alias, [switch]$add, [switch]$remove,
         }
     }
 
-    if($path) {
-        return $script:favs_dict[$alias]
-    }
+    
     
     if((!$alias -and !$open -and !$remove -and !$add) -or $list) {
         return Get-Favorites
